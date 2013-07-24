@@ -55,16 +55,23 @@ YA="/media/yandex.disk"
 		cp --archive --link "$destination/latest" "$destination/$DATE"
 		#Удаляем дамп базы из общей папки
 		rm -rf /$destination/latest/$mysqln$DATE.sql.gz
+		#Проверяем есть ли шифрованный архив с тем же именем на удаленном сервере
+		#if [ ! -f $YA/$domain/$DATE.tar.aes ]; then
+			#Переходим в каталог с бэкапом
+			#cd $destination
+			#Создаем шифрованный архив
+			#tar -cf - $DATE | aescrypt -e -p "qwerty" - >$DATE.tar.aes
+			#Закачиваем на удаленный сервер
+			#mv $DATE.tar.aes $YA/$domain/
+		#fi
 		#Проверяем есть ли архив с тем же именем на удаленном сервере
-		if [ ! -f $YA/$domain/$DATE.tar.aes ]; then
+		if [ ! -f $YA/$domain/$DATE.tar.gz ]; then
 			#Переходим в каталог с бэкапом
 			cd $destination
 			#Создаем архив
 			tar -czf $DATE.tar.gz $DATE/
-			#Шифрованный архив
-			#tar -cf - $DATE | aescrypt -e -p "qwerty" - >$DATE.tar.aes
 			#Закачиваем на удаленный сервер
-			mv $DATE.tar.aes $YA/$domain/
+			mv $DATE.tar.gz $YA/$domain/
 		fi
 		#Удаляем бэкапы старше недели
 		find "$destination" -maxdepth 1 -ctime +7 -type d -path "$destination/????-??-??" -exec rm -r -f {} \;
@@ -73,6 +80,6 @@ YA="/media/yandex.disk"
 		echo "`date` *** Общий объем `du -sh $destination | awk '{print $1}'`">>$SLOG
 		echo "------------------------------------------------------------------">>$SLOG
 	done
-	#Удаляем архивы старше 7 дней
+	#Удаляем архивы на удаленном сервере старше 7 дней
 	find "$YA" -type f -mtime +7 -exec rm -r -f {} \;
 	rm $PID_FILE
